@@ -4,12 +4,11 @@ package TestRecetteAffichageFichier;
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.openqa.selenium.WebElement;
 
 /**
  *
@@ -20,32 +19,32 @@ public class TestRecetteAffichageFichier extends TestRecetteCommon {
     public TestRecetteAffichageFichier(String testName) {
         super(testName);
     }
-
     
     public void testContenuFichier() throws InterruptedException {
-        String fileName = "C:\\Documents and Settings\\g35079\\Desktop\\Subversion Client\\Projet12Rep\\MarkESI_TestRecette\\src\\java\\TestFichier\\Test1Ligne.java";
+        String fileName = "files/TestRecetteCommon.java";
         InputStream myStream;
-        String myString="";
+        String contents="";
         try {
             myStream = new FileInputStream(fileName);
-            myString = IOUtils.toString(myStream);
+            contents = IOUtils.toString(myStream);
         } catch (Exception ex) {
             System.out.println(ex);
         } 
   
-        final String contents = myString;
-        System.out.println(contents);
-        selenium.open("MarkESI-client-web/afficheFichier?fileName="+fileName);
-        //Thread.sleep(20000);
-        String contentsOnPage = selenium.getText("id=contenu");
-        System.out.println("contents page \n"+contentsOnPage);
+        selenium.open("MarkESI-client-web/?action=viewFile&fileName="
+                + (new File(fileName)).getAbsolutePath());
+//        Thread.sleep(20000);
+        String contentsOnPage = selenium.getEval("selenium.browserbot.getCurrentWindow()."
+                + "$('#content').text();");
+//        String contentsOnPage = selenium.getText("id=content");
+
+        contentsOnPage = contentsOnPage.replaceAll("(\n|\r)", "");
+        contents = contents.replaceAll("(\n|\r)", "");
         assertEquals(contents, contentsOnPage);
     }
     
     public void testContenuFichierInexistant() {
-        selenium.open("MarkESI-client-web/afficheFichier?fileName=aaaaa"); // l'id n'existe pas
-        String contentsOnPage = selenium.getText("id=contenu");
-        String contents = "Attention ! Ce fichier n'existe pas !";
-        assertEquals(contents, contentsOnPage);
+        selenium.open("MarkESI-client-web/?action=viewFile&fileName=aaaa"); // l'id n'existe pas
+        assertTrue(selenium.isTextPresent("Ce fichier n'existe pas !"));
     }
 }

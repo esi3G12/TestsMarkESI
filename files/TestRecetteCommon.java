@@ -1,3 +1,5 @@
+//Test
+    
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -21,7 +23,7 @@ public abstract class TestRecetteCommon extends TestCase {
     @Override
     protected void setUp() throws Exception {
 //        selenium = new DefaultSelenium("localhost", 4444, "*firefox", "http://localhost:8080/projet");
-        selenium = new DefaultSelenium("localhost", 4444, "*firefox", "http://localhost:14082/MarkESI-client-web");
+        selenium = new DefaultSelenium("localhost", 4444, "*firefox", "http://localhost:24211/MarkESI-client-web");
         selenium.start();
     }
 

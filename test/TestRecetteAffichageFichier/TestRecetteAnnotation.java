@@ -4,14 +4,13 @@
  */
 package TestRecetteAffichageFichier;
 
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
+import java.io.File;
+import javax.ejb.EJB;
+import markesi.business.AnnotationEJB;
+import markesi.business.IntervalEJB;
+import markesi.entity.Annotation;
+import markesi.entity.Interval;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.server.SeleniumDriverResourceHandler;
 
 /**
  *
@@ -19,39 +18,27 @@ import org.openqa.selenium.server.SeleniumDriverResourceHandler;
  */
 public class TestRecetteAnnotation extends TestRecetteCommon {
 
-    private WebDriver driver ;
+    private WebDriver driver;
+    @EJB
+    private static AnnotationEJB annotationEJB;
+    @EJB
+    private static IntervalEJB intervalEJB;
 
     public TestRecetteAnnotation(String testName) {
         super(testName);
     }
-//
-//    public void testAffichageAnnotation() {
-//        Annotation a = new Annotation();
-//        final String contents = "Hello World ! Everything is ok !";
-//        a.setContenu(contents);
-//        // L'intervalle commence en ligne 1 et en colonne 3 
-//        //et se termine en ligne 4 et en colonne 6
-//        a.addIntervalle(new Position(1, 3), new Position(4, 6));
-//        selenium.open("/afficheAnnotation?annotationId=" + a.getId());
-//        String annotationTexte = selenium.getText("id=annotationTexte");
-//        assertEquals(contents, annotationTexte);
-//        String intervallesTexte = selenium.getText("id=intervallesTexte");
-//        String intervallesTexteAttendu = "[1,3]->[4,6]";
-//        assertEquals(intervallesTexteAttendu, intervallesTexte);
-//    }
-//
-//    public void testAjouterAnnotationDB() {
-//        Annotation a = new Annotation();
-//        final String contents = "Hello World ! Everything is ok !";
-//        a.setContenu(contents);
-//        a.addIntervalle(new Position(1, 3), new Position(4, 6));
-//
-//        ajoutAnnotationSite(a);
-//        Annotation b = AnnotationDB.find(a.getId());
-//
-//        assertEquals(b, a);
-//    }
-//
+
+    
+    public void testAjouterAnnotationDB() {
+        Annotation a = annotationEJB.create("Hello World ! Everything is ok !");
+        Interval i = intervalEJB.create(0, 5);
+        
+        ajoutAnnotationSite(a);
+        Annotation b = AnnotationDB.find(a.getId());
+
+        assertEquals(b, a);
+    }
+
 //    public void testAjouterAnnotationSite() {
 //        Annotation a = new Annotation();
 //        a.addIntervalle(new Position(1, 3), new Position(4, 6));
@@ -67,24 +54,43 @@ public class TestRecetteAnnotation extends TestRecetteCommon {
 //    }
 
     public void testSelectionTexte() throws javax.script.ScriptException, InterruptedException {
-        selenium.open("/");
+        selenium.open("MarkESI-client-web/?action=manageFile&fileName="
+                + (new File("files/TestRecetteCommon.java")).getAbsolutePath());
         selenium.waitForPageToLoad("6000");
 
-        String script = "var range = document.createRange();"
-                + "var start = document.getElementById('prm');"
-                + "var textNode = start.firstChild;"
-                + "range.setStart(textNode, 2);"
-                + "range.setEnd(textNode, 3);"
-                + "window.getSelection().addRange(range);";
+        String script = "$('#content').selection(0, 6); "
+                + "$('#content').mouseup();";
 
         selenium.runScript(script);
-        
-        
-        selenium.getText("id=prm").contains("Entrez");
 
+        assertEquals(selenium.getText("class=selection"), "//Test");
 
+    }
 
+    public void testSelectionVide() throws javax.script.ScriptException, InterruptedException {
+        selenium.open("MarkESI-client-web/?action=manageFile&fileName="
+                + (new File("files/TestRecetteCommon.java")).getAbsolutePath());
+        selenium.waitForPageToLoad("6000");
 
+        String script = "$('#content').selection(0, 0); "
+                + "$('#content').mouseup();";
 
+        selenium.runScript(script);
+
+        assertFalse(selenium.isElementPresent("class=selection"));
+    }
+
+    public void testSelectionEspaces() throws javax.script.ScriptException, InterruptedException {
+        selenium.open("MarkESI-client-web/?action=manageFile&fileName="
+                + (new File("files/TestRecetteCommon.java")).getAbsolutePath());
+        selenium.waitForPageToLoad("6000");
+
+        //du caractère 8 au caractère 10 il n'y a que des espaces
+        String script = "$('#content').selection(8, 10); "
+                + "$('#content').mouseup();";
+
+        selenium.runScript(script);
+
+        assertFalse(selenium.isElementPresent("class=selection"));
     }
 }
